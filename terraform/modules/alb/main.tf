@@ -20,7 +20,10 @@ resource "aws_lb_target_group" "frontend" {
   target_type = "ip"
 
   health_check {
-    path = "/"
+    path                = "/"
+    matcher             = "200-399"
+    healthy_threshold   = 2
+    unhealthy_threshold = 3
   }
 
   tags = {
@@ -38,7 +41,10 @@ resource "aws_lb_target_group" "backend" {
   target_type = "ip"
 
   health_check {
-    path = "/"
+    path                = "/api/"
+    matcher             = "200-399"
+    healthy_threshold   = 2
+    unhealthy_threshold = 3
   }
 
   tags = {
@@ -71,7 +77,7 @@ resource "aws_lb_listener_rule" "backend" {
 
   condition {
     path_pattern {
-      values = ["/api/*"]
+      values = ["/api", "/api/*"]
     }
   }
 }
