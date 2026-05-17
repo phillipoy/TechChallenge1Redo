@@ -1,0 +1,14 @@
+services:
+  backend:
+    build: ./backend
+    container_name: techchallenge1-redo-backend
+    ports:
+      - "5001:5000"
+
+  frontend:
+    build: ./frontend
+    container_name: techchallenge1-redo-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
