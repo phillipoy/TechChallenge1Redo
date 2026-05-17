@@ -46,7 +46,7 @@ resource "aws_iam_role" "jenkins_role" {
   }
 }
 
-# Gives Jenkins broad AWS access for building and deploying during the project
+# Gives Jenkins EC2 broad AWS access during the project
 resource "aws_iam_role_policy_attachment" "jenkins_admin_policy" {
   role       = aws_iam_role.jenkins_role.name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
@@ -56,4 +56,26 @@ resource "aws_iam_role_policy_attachment" "jenkins_admin_policy" {
 resource "aws_iam_instance_profile" "jenkins_profile" {
   name = "${var.project_name}-jenkins-profile"
   role = aws_iam_role.jenkins_role.name
+}
+
+# IAM user used by Jenkins pipeline credentials
+resource "aws_iam_user" "jenkins_pipeline_user" {
+  name = "${var.project_name}-jenkins-pipeline-user"
+
+  tags = {
+    Name        = "${var.project_name}-jenkins-pipeline-user"
+    Description = "IAM user for Jenkins CI/CD pipeline"
+  }
+}
+
+# Allows Jenkins pipeline to push Docker images to ECR
+resource "aws_iam_user_policy_attachment" "jenkins_ecr_power_user" {
+  user       = aws_iam_user.jenkins_pipeline_user.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
+}
+
+# Allows Jenkins pipeline to redeploy ECS services
+resource "aws_iam_user_policy_attachment" "jenkins_ecs_full_access" {
+  user       = aws_iam_user.jenkins_pipeline_user.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
 }
